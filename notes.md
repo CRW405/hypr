@@ -166,3 +166,5 @@ alias la="ls -a"
 ## Unorganized VVVVVV
 
 sudo pacman -S kvantum 
+
+sudo pacman -S bluez bluez-utils bluez-deprecated-tools bluetui blueman 
