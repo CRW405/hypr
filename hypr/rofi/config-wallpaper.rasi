@@ -17,9 +17,16 @@ window {
 }
 
 mainbox {
-  children: [ "inputbar", "listview" ];
+  children: [ "inputbar", "message", "listview" ];
   padding: @padding;
+  spacing: 10px;
   background-color: transparent;
+}
+
+message {
+  background-color: @background-alt;
+  border-radius: @radius;
+  padding: @padding;
 }
 
 inputbar {
