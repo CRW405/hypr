@@ -431,6 +431,12 @@ hl.window_rule({
 })
 
 hl.window_rule({
+	name = "spotify-opacity",
+	match = { class = "^[Ss]potify$" },
+	opacity = "0.9 override 0.9 override",
+})
+
+hl.window_rule({
 	name = "fix-xwayland-drags",
 	match = {
 		class = "^$",
