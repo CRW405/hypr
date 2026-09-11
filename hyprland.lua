@@ -437,6 +437,12 @@ hl.window_rule({
 })
 
 hl.window_rule({
+	name = "discord-opacity",
+	match = { class = "^[Dd]iscord|[Vv]esktop$" },
+	opacity = "0.9 override 0.9 override",
+})
+
+hl.window_rule({
 	name = "fix-xwayland-drags",
 	match = {
 		class = "^$",
