@@ -449,6 +449,12 @@ hl.window_rule({
 })
 
 hl.window_rule({
+	name = "make-me-float",
+	match = { class = "^make-me-float$" },
+	float = true,
+})
+
+hl.window_rule({
 	name = "fix-xwayland-drags",
 	match = {
 		class = "^$",

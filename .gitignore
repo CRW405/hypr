@@ -1,4 +1,5 @@
-monitors.conf
-monitors.lua
-workspaces.conf
-workspaces.lua
+# Generated per-machine display configuration.
+**/monitors.conf
+**/monitors.lua
+**/workspaces.conf
+**/workspaces.lua
