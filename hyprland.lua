@@ -144,7 +144,11 @@ bind_exec_super("Return", Terminal)
 bind_exec_super("E", Explorer)
 bind_exec_super("B", Browser)
 bind_exec_super("V", "kitty nvim")
-bind_exec_super("Super_L", ScriptsDir .. "Launcher.sh")
+hl.bind(
+	Mod .. " + Super_L",
+	hl.dsp.exec_cmd(ScriptsDir .. "Launcher.sh"),
+	{ release = true }
+)
 bind_exec_super("A", ScriptsDir .. "OverviewToggle.sh")
 bind_exec_super("W", ScriptsDir .. "WallpaperPicker.sh")
 bind_exec_super("S", ScriptsDir .. "QuickSearch.sh")
@@ -266,7 +270,9 @@ end)
 -- hyprlock's -c does work, and is required: our config isn't at its default path.
 -- Lid-close doesn't call systemctl suspend - logind already suspends on lid close;
 -- this just gives hyprlock a head start before hypridle's before_sleep_cmd fires.
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(hyprlockCmd), { locked = true })
+-- When an external display is connected, skip the lid-triggered lock.
+local lidLockCmd = "if ! hyprctl monitors -j | jq -e 'length > 1' >/dev/null; then " .. hyprlockCmd .. " fi"
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(lidLockCmd), { locked = true })
 
 -- Manual lock, independent of the idle/logind roundtrip.
 hl.bind("CTRL + ALT + L", hl.dsp.exec_cmd(hyprlockCmd), { locked = true })
@@ -489,7 +495,7 @@ hl.config({
 	},
 	decoration = {
 		rounding = Style.radius,
-		rounding_power = 0,
+		rounding_power = 1,
 		active_opacity = 1.0,
 		inactive_opacity = 0.9,
 		shadow = {

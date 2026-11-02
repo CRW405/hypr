@@ -7,7 +7,7 @@ Item {
     id: root
 
     property string label: ""
-    property bool expanded: true
+    property bool expanded: false
     property color textColor: Theme.Theme.fg
     property color activeColor: Theme.Theme.fg
     property color backgroundColor: "transparent"
@@ -40,6 +40,7 @@ Item {
             textColor: root.expanded ? root.activeColor : root.textColor
             fontSize: root.fontSize
         }
+
     }
 
 }

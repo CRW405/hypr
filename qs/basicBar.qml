@@ -77,22 +77,6 @@ ShellRoot {
                 required property var modelData
 
                 PanelWindow {
-                    // TODO:
-                    // Figure out what to do about not enough space
-                    // Dashboard dropdown:
-                    //      Notifications
-                    //      picture thing
-                    //      media controls
-                    //      audio controls
-                    //      settings:
-                    //          Bluetooth
-                    //          Wifi
-                    //          Power / logout options
-                    // ---
-                    // Commented code catcher:
-                    // anchors.fill: parent
-                    // spacing: gap
-
                     id: barWindow
 
                     property bool showCpuFahrenheit: false
@@ -338,7 +322,8 @@ ShellRoot {
                 PanelWindow {
                     id: calendarWindow
 
-                    property bool hoverActive: clock.hovered || calendarPopup.hovered
+                    // property bool hoverActive: clock.hovered || calendarPopup.hovered
+                    property bool hoverActive: clock.hovered
 
                     screen: screenScope.modelData
                     anchors.top: true
