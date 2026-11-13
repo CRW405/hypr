@@ -27,6 +27,8 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
         onClicked: root.toggleRequested()
     }
 
@@ -36,8 +38,13 @@ Item {
         spacing: Theme.Theme.gap
 
         StyledText {
-            text: root.label + (root.expanded ? "" : "")
+            text: root.label
             textColor: root.expanded ? root.activeColor : root.textColor
+            fontSize: root.fontSize
+        }
+
+        StyledText {
+            text: root.expanded ? "[-]" : "[+]"
             fontSize: root.fontSize
         }
 

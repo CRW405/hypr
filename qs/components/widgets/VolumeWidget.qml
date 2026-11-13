@@ -4,7 +4,7 @@ import Quickshell.Io
 import "../common"
 import "../../theme" as Theme
 
-RowLayout {
+Item {
     id: root
 
     property real volume: 0
@@ -13,13 +13,19 @@ RowLayout {
     property color mutedColor: Theme.Theme.muted
     property int fontSize: Theme.Theme.fontSize
 
-    spacing: Theme.Theme.gap
+    Layout.leftMargin: Theme.Theme.gap
+    Layout.rightMargin: Theme.Theme.gap
+    implicitWidth: volumeSlot.implicitWidth
+    implicitHeight: volumeSlot.implicitHeight
 
     Process {
         id: wpctlProc
     }
 
     SlotText {
+        id: volumeSlot
+
+        anchors.fill: parent
         widthSamples: ["Vol: 100%", "Vol: Muted"]
         content: volumeText
 
@@ -35,6 +41,8 @@ RowLayout {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
         onClicked: {
             wpctlProc.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"];
             wpctlProc.running = true;

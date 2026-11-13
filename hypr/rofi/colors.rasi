@@ -10,7 +10,7 @@
   primary: #5c9dff;
   secondary: #b39dff;
   danger: #ff6b6b;
-  warning: #ffcc00;
+  warning: #ff5c5c;
   ok: #4caf50;
   active: #45454e;
   inactive: #6a6a72;

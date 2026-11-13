@@ -144,11 +144,7 @@ bind_exec_super("Return", Terminal)
 bind_exec_super("E", Explorer)
 bind_exec_super("B", Browser)
 bind_exec_super("V", "kitty nvim")
-hl.bind(
-	Mod .. " + Super_L",
-	hl.dsp.exec_cmd(ScriptsDir .. "Launcher.sh"),
-	{ release = true }
-)
+hl.bind(Mod .. " + Super_L", hl.dsp.exec_cmd(ScriptsDir .. "Launcher.sh"), { release = true })
 bind_exec_super("A", ScriptsDir .. "OverviewToggle.sh")
 bind_exec_super("W", ScriptsDir .. "WallpaperPicker.sh")
 bind_exec_super("S", ScriptsDir .. "QuickSearch.sh")

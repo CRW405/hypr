@@ -92,7 +92,7 @@ cmd_play() {
   local mute_opt="no"
   [ "$muted" = "true" ] && mute_opt="yes"
 
-  setsid mpvpaper -o "mute=$mute_opt loop background-color=#FF000000" -l background "$output" "$source" >/dev/null 2>&1 &
+  setsid mpvpaper -o "mute=$mute_opt loop load-scripts=no hwdec=auto-safe background-color=#FF000000" -l background "$output" "$source" >/dev/null 2>&1 &
   disown
 
   sleep 1.5

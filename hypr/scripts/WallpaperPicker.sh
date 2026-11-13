@@ -15,6 +15,7 @@ VIDEO_CTL="$SCRIPT_DIR/WallpaperVideoCtl.sh"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/wallpaper"
 STREAMS_FILE="$STATE_DIR/streams.json"
 MONITORS_FILE="$STATE_DIR/monitors.json"
+THUMBNAIL_DIR="$STATE_DIR/thumbnails"
 
 # Keep hypr/rofi/colors.rasi in sync with style/style.json before launching.
 "$SCRIPT_DIR/GenerateRofiColors.sh"
@@ -24,9 +25,59 @@ if [ ! -d "$WALLPAPER_DIR" ]; then
   exit 1
 fi
 
-mkdir -p "$STATE_DIR"
+mkdir -p "$STATE_DIR" "$THUMBNAIL_DIR"
 [ -f "$STREAMS_FILE" ] || echo "[]" >"$STREAMS_FILE"
 [ -f "$MONITORS_FILE" ] || echo "{}" >"$MONITORS_FILE"
+
+video_thumbnail() {
+  local video="$1" key thumbnail tmp
+  command -v ffmpeg >/dev/null 2>&1 || return 1
+
+  key="$(printf '%s' "$video" | sha256sum | cut -d' ' -f1)"
+  thumbnail="$THUMBNAIL_DIR/$key.jpg"
+  if [ ! -s "$thumbnail" ] || [ "$video" -nt "$thumbnail" ]; then
+    tmp="$THUMBNAIL_DIR/.$key.$$.jpg"
+    if ! ffmpeg -nostdin -hide_banner -loglevel error -ss 1 -i "$video" \
+      -frames:v 1 -vf 'scale=480:-2' -q:v 4 -y "$tmp" >/dev/null 2>&1 ||
+      [ ! -s "$tmp" ]; then
+      rm -f "$tmp"
+      return 1
+    fi
+    mv "$tmp" "$thumbnail" || {
+      rm -f "$tmp"
+      return 1
+    }
+  fi
+
+  printf '%s' "$thumbnail"
+}
+
+stream_thumbnail() {
+  local url="$1" key thumbnail tmp_base generated
+  command -v yt-dlp >/dev/null 2>&1 || return 1
+
+  key="$(printf '%s' "$url" | sha256sum | cut -d' ' -f1)"
+  thumbnail="$THUMBNAIL_DIR/$key.jpg"
+  [ -s "$thumbnail" ] && {
+    printf '%s' "$thumbnail"
+    return 0
+  }
+
+  tmp_base="$THUMBNAIL_DIR/.$key.$$.thumb"
+  if ! timeout 10 yt-dlp --no-playlist --skip-download --write-thumbnail \
+    --convert-thumbnails jpg -o "$tmp_base.%(ext)s" "$url" >/dev/null 2>&1; then
+    rm -f "$tmp_base".*
+    return 1
+  fi
+
+  for generated in "$tmp_base".*; do
+    [ -s "$generated" ] || continue
+    mv "$generated" "$thumbnail" || return 1
+    printf '%s' "$thumbnail"
+    return 0
+  done
+  return 1
+}
 
 output="$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')"
 
@@ -69,7 +120,12 @@ build_entries() {
   local video_files
   mapfile -t video_files < <(find "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' -o -iname '*.m4v' \) | sort)
   for f in "${video_files[@]}"; do
-    ENTRIES+="$(basename "$f")\0icon\x1fvideo-x-generic\n"
+    local thumbnail
+    if thumbnail="$(video_thumbnail "$f")"; then
+      ENTRIES+="$(basename "$f")\0icon\x1f${thumbnail}\n"
+    else
+      ENTRIES+="$(basename "$f")\0icon\x1fvideo-x-generic\n"
+    fi
   done
 
   local label url count title
@@ -86,7 +142,12 @@ build_entries() {
     fi
     label_count["$title"]="$count"
     STREAM_URL_BY_LABEL["$label"]="$url"
-    ENTRIES+="${label}\0icon\x1fvideo-x-generic\n"
+    local thumbnail
+    if thumbnail="$(stream_thumbnail "$url")"; then
+      ENTRIES+="${label}\0icon\x1f${thumbnail}\n"
+    else
+      ENTRIES+="${label}\0icon\x1fvideo-x-generic\n"
+    fi
   done < <(jq -r '.[] | [.url, .title] | @tsv' "$STREAMS_FILE")
 }
 

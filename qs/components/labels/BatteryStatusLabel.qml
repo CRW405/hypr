@@ -24,7 +24,7 @@ SlotText {
         return "Battery"
     }
 
-    widthSamples: ["Charging 23h 59m", "Discharging", "Full", "Battery"]
+    widthSamples: root.showEstimate && root.status === "Charging" && root.timeToFullSec > 0 ? ["Charging " + root.formatTime(root.timeToFullSec), "Discharging", "Full", "Battery"] : ["Charging", "Discharging", "Full", "Battery"]
     visible: root.hasBattery
     content: labelText
 

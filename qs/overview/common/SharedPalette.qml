@@ -14,7 +14,7 @@ QtObject {
 		property color primary: "#5c9dff"
 		property color secondary: "#b39dff"
 		property color danger: "#ff6b6b"
-		property color warning: "#ffcc00"
+		property color warning: "#ff5c5c" // Previous orange: #ffcc00
 		property color ok: "#4caf50"
 		property color active: "#45454e"
 		property color inactive: "#6a6a72"

@@ -60,8 +60,13 @@ ShellRoot {
         keepOnReload: true
         bodySupported: true
         bodyMarkupSupported: true
+        bodyHyperlinksSupported: true
+        bodyImagesSupported: true
         imageSupported: true
         actionsSupported: true
+        actionIconsSupported: true
+        inlineReplySupported: true
+        persistenceSupported: true
         onNotification: (notification) => {
             return notification.tracked = true;
         }
@@ -152,9 +157,6 @@ ShellRoot {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.Theme.gap
 
-                            Seperator {
-                            }
-
                             NotificationIndicator {
                                 id: notificationIndicator
 
@@ -166,9 +168,12 @@ ShellRoot {
                         Flickable {
                             id: rightScrollArea
 
+                            property bool hasOverflow: scrollContent.implicitWidth > (rightSection.width - pinnedRow.width - Theme.Theme.gap)
+
                             anchors.left: parent.left
                             anchors.right: pinnedRow.left
-                            anchors.rightMargin: Theme.Theme.gap
+                            anchors.leftMargin: hasOverflow ? 18 : 0
+                            anchors.rightMargin: Theme.Theme.gap + (hasOverflow ? 18 : 0)
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             contentWidth: Math.max(scrollContent.implicitWidth, width)
@@ -193,8 +198,6 @@ ShellRoot {
                                 spacing: Theme.Theme.gap
 
                                 WidgetFolder {
-                                    // backgroundColor: Theme.Theme.bgAlt
-
                                     label: "System"
                                     expanded: barWindow.diagnosticsExpanded
                                     onToggleRequested: barWindow.diagnosticsExpanded = !barWindow.diagnosticsExpanded
@@ -311,6 +314,55 @@ ShellRoot {
                                     onToggleRequested: idleInhibitorPoller.toggle()
                                 }
 
+                                Seperator {
+                                }
+
+                            }
+
+                            Item {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 18
+                                height: parent.height
+                                visible: rightScrollArea.hasOverflow && rightScrollArea.contentX > 0
+
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: "‹"
+                                    textColor: Theme.Theme.muted
+                                    fontSize: Theme.Theme.fontSize
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: rightScrollArea.contentX = Math.max(0, rightScrollArea.contentX - rightScrollArea.width * 0.75)
+                                }
+
+                            }
+
+                            Item {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 18
+                                height: parent.height
+                                visible: rightScrollArea.hasOverflow && rightScrollArea.contentX < rightScrollArea.contentWidth - rightScrollArea.width
+
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: "›"
+                                    textColor: Theme.Theme.muted
+                                    fontSize: Theme.Theme.fontSize
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: rightScrollArea.contentX = Math.min(rightScrollArea.contentWidth - rightScrollArea.width, rightScrollArea.contentX + rightScrollArea.width * 0.75)
+                                }
+
                             }
 
                         }
@@ -377,7 +429,7 @@ ShellRoot {
 
                         notifServer: notificationServer
                         anchors.right: parent.right
-                        anchors.rightMargin: Theme.Theme.gap
+                        anchors.rightMargin: 0
                     }
 
                 }
