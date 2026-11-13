@@ -12,13 +12,14 @@ RowLayout {
     property color mutedColor: Theme.Theme.muted
     property int fontSize: Theme.Theme.fontSize
     property int scrollWidth: 160
-
     readonly property var activePlayer: {
         const players = Mpris.players.values;
         if (!players || players.length === 0)
             return null;
 
-        const playing = players.find((p) => p.playbackState === MprisPlaybackState.Playing);
+        const playing = players.find((p) => {
+            return p.playbackState === MprisPlaybackState.Playing;
+        });
         return playing || players[0];
     }
 
@@ -26,7 +27,7 @@ RowLayout {
     visible: activePlayer !== null
 
     StyledText {
-        text: root.activePlayer && root.activePlayer.isPlaying ? "PLAYING" : "PAUSED"
+        text: root.activePlayer && root.activePlayer.isPlaying ? "[>>]" : "[||]"
         textColor: root.textColor
         fontSize: root.fontSize
     }
@@ -37,4 +38,5 @@ RowLayout {
         fontSize: root.fontSize
         text: root.activePlayer ? (root.activePlayer.trackTitle || "Unknown") + " — " + (root.activePlayer.trackArtist || "Unknown") : ""
     }
+
 }

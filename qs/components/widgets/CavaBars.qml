@@ -5,6 +5,8 @@ import "../../theme" as Theme
 Item {
     id: root
 
+    clip: true
+
     property int bars: 20 // change it in cava.conf too
     property int maxValue: 750
     property int barWidth: 4

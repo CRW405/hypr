@@ -13,7 +13,10 @@ ROFI_THEME="$SCRIPT_DIR/../rofi/config-wallpaper.rasi"
 VIDEO_CTL="$SCRIPT_DIR/WallpaperVideoCtl.sh"
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/wallpaper"
-STREAMS_FILE="$STATE_DIR/streams.json"
+# Keep saved links with the config so they can be shared across machines.
+STREAMS_FILE="$SCRIPT_DIR/../wallpapers/streams.json"
+LEGACY_STREAMS_FILE="$STATE_DIR/streams.json"
+STREAMS_MIGRATION_MARKER="$STATE_DIR/streams-migrated"
 MONITORS_FILE="$STATE_DIR/monitors.json"
 THUMBNAIL_DIR="$STATE_DIR/thumbnails"
 
@@ -25,9 +28,37 @@ if [ ! -d "$WALLPAPER_DIR" ]; then
   exit 1
 fi
 
-mkdir -p "$STATE_DIR" "$THUMBNAIL_DIR"
-[ -f "$STREAMS_FILE" ] || echo "[]" >"$STREAMS_FILE"
+mkdir -p "$STATE_DIR" "$THUMBNAIL_DIR" "$(dirname "$STREAMS_FILE")"
+[ -f "$STREAMS_FILE" ] || printf '[]\n' >"$STREAMS_FILE"
 [ -f "$MONITORS_FILE" ] || echo "{}" >"$MONITORS_FILE"
+
+migrate_legacy_streams() {
+  [ ! -f "$STREAMS_MIGRATION_MARKER" ] || return 0
+
+  if [ -f "$LEGACY_STREAMS_FILE" ]; then
+    local temporary
+    temporary="$(mktemp "$STREAMS_FILE.tmp.XXXXXX")"
+    if ! jq -s '
+      if all(.[]; type == "array" and all(.[]; (.url | type == "string") and (.title | type == "string"))) then
+        reduce (.[0] + .[1])[] as $entry ([];
+          if any(.[]; .url == $entry.url) then . else . + [$entry] end)
+      else
+        error("saved stream files must contain arrays of entries with string URLs and titles")
+      end
+    ' "$STREAMS_FILE" "$LEGACY_STREAMS_FILE" >"$temporary"; then
+      rm -f -- "$temporary"
+      return 1
+    fi
+    if ! mv -- "$temporary" "$STREAMS_FILE"; then
+      rm -f -- "$temporary"
+      return 1
+    fi
+  fi
+
+  touch "$STREAMS_MIGRATION_MARKER"
+}
+
+migrate_legacy_streams
 
 video_thumbnail() {
   local video="$1" key thumbnail tmp

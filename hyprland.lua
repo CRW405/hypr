@@ -38,6 +38,22 @@ local Browser = "firefox"
 
 local ScriptsDir = script_dir .. "hypr/scripts/"
 
+local function shellQuote(value)
+	return "'" .. value:gsub("'", "'\\''") .. "'"
+end
+
+local function execWithFailureNotification(title, command)
+	local notifier = shellQuote(ScriptsDir .. "NotifyError.sh")
+	hl.exec_cmd(
+		"bash "
+			.. notifier
+			.. " run "
+			.. shellQuote(title)
+			.. " -- bash -c "
+			.. shellQuote(command)
+	)
+end
+
 -- ============================================================
 -- Environment Variables
 -- ============================================================
@@ -50,21 +66,18 @@ hl.env("HYPRCURSOR_SIZE", "20")
 -- ============================================================
 
 -- works around a UWSM-less-session race that silently skipped opentabletdriver.service
-local function importSessionEnvForSystemdUser()
-	hl.exec_cmd(
+hl.on("hyprland.start", function()
+	execWithFailureNotification(
+		"Session environment setup failed",
 		"systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE"
 			.. " && hash dbus-update-activation-environment 2>/dev/null"
 			.. " && dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE"
 	)
-end
-
-hl.on("hyprland.start", function()
-	importSessionEnvForSystemdUser()
 	-- hl.exec_cmd("waybar")
 	-- hl.exec_cmd("hyprpm reload -n")
-	hl.exec_cmd("qs -p " .. script_dir .. "qs/overview")
-	hl.exec_cmd("qs -p " .. script_dir .. "qs/basicBar.qml")
-	hl.exec_cmd(script_dir .. "hypr/scripts/WallpaperInit.sh")
+	execWithFailureNotification("Quickshell overview failed", "qs -p " .. shellQuote(script_dir .. "qs/overview"))
+	execWithFailureNotification("Quickshell bar failed", "qs -p " .. shellQuote(script_dir .. "qs/basicBar.qml"))
+	execWithFailureNotification("Wallpaper initialization failed", shellQuote(ScriptsDir .. "WallpaperInit.sh"))
 	hl.exec_cmd("wl-paste --watch cliphist store")
 	hl.exec_cmd("systemctl --user enable --now opentabletdriver")
 	hl.exec_cmd(ScriptsDir .. "Hyprsunset.sh auto")

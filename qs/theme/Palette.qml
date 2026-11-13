@@ -40,6 +40,24 @@ QtObject {
 		property int padding: 10
 	}
 
+	property bool _styleErrorNotified: false
+
+	function _reportStyleError(message) {
+		if (root._styleErrorNotified)
+			return
+		root._styleErrorNotified = true
+		root._errorNotification.command = [
+			"bash",
+			Quickshell.shellDir + "/../hypr/scripts/NotifyError.sh",
+			"notify",
+			"HyprQS configuration error",
+			"Could not load style/style.json: " + message
+		]
+		root._errorNotification.running = true
+	}
+
+	property Process _errorNotification: Process {}
+
 	property FileView _file: FileView {
 		// Qt.resolvedUrl resolves against Quickshell's virtual -p root, not this
 		// file's real path; Quickshell.shellDir keeps this correct regardless of checkout location.
@@ -49,11 +67,12 @@ QtObject {
 		onLoaded: {
 			try {
 				root._apply(JSON.parse(root._stripComments(text())))
+				root._styleErrorNotified = false
 			} catch (e) {
-				console.warn("Palette: failed to parse style/style.json:", e)
+				root._reportStyleError(String(e))
 			}
 		}
-		onLoadFailed: error => console.warn("Palette: failed to load style/style.json:", error)
+		onLoadFailed: error => root._reportStyleError(String(error))
 	}
 
 	// strips // and /* */ comments outside of string literals so style.json can support JSONC

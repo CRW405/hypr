@@ -95,28 +95,46 @@ ShellRoot {
                     implicitHeight: Theme.Theme.barHeight
                     color: Theme.Theme.bg
 
-                    RowLayout {
-                        id: leftSection
-
+                    Item {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.Theme.gap
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.Theme.gap
+                        anchors.right: middleSection.left
+                        anchors.rightMargin: Theme.Theme.gap
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        clip: true
 
-                        WorkspaceSwitcher {
-                        }
+                        RowLayout {
+                            id: leftSection
 
-                        Seperator {
-                        }
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: implicitWidth
+                            spacing: Theme.Theme.gap
 
-                        SystemTrayWidget {
-                            screen: screenScope.modelData
-                        }
+                            StyledText {
+                                text: "(^_^)-O"
+                            }
 
-                        Seperator {
-                        }
+                            Seperator {
+                            }
 
-                        MediaControls {
+                            WorkspaceSwitcher {
+                            }
+
+                            Seperator {
+                            }
+
+                            SystemTrayWidget {
+                                screen: screenScope.modelData
+                            }
+
+                            Seperator {
+                            }
+
+                            MediaControls {
+                            }
+
                         }
 
                     }
@@ -319,50 +337,51 @@ ShellRoot {
 
                             }
 
-                            Item {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 18
-                                height: parent.height
-                                visible: rightScrollArea.hasOverflow && rightScrollArea.contentX > 0
+                        }
 
-                                StyledText {
-                                    anchors.centerIn: parent
-                                    text: "‹"
-                                    textColor: Theme.Theme.muted
-                                    fontSize: Theme.Theme.fontSize
-                                }
+                        Item {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 18
+                            height: parent.height
+                            z: 1
+                            visible: rightScrollArea.hasOverflow && rightScrollArea.contentX > 0
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: rightScrollArea.contentX = Math.max(0, rightScrollArea.contentX - rightScrollArea.width * 0.75)
-                                }
-
+                            StyledText {
+                                anchors.centerIn: parent
+                                text: "<<"
+                                fontSize: Theme.Theme.fontSize
                             }
 
-                            Item {
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 18
-                                height: parent.height
-                                visible: rightScrollArea.hasOverflow && rightScrollArea.contentX < rightScrollArea.contentWidth - rightScrollArea.width
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: rightScrollArea.contentX = Math.max(0, rightScrollArea.contentX - rightScrollArea.width * 0.75)
+                            }
 
-                                StyledText {
-                                    anchors.centerIn: parent
-                                    text: "›"
-                                    textColor: Theme.Theme.muted
-                                    fontSize: Theme.Theme.fontSize
-                                }
+                        }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: rightScrollArea.contentX = Math.min(rightScrollArea.contentWidth - rightScrollArea.width, rightScrollArea.contentX + rightScrollArea.width * 0.75)
-                                }
+                        Item {
+                            anchors.right: pinnedRow.left
+                            anchors.rightMargin: Theme.Theme.gap
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 18
+                            height: parent.height
+                            z: 1
+                            visible: rightScrollArea.hasOverflow && rightScrollArea.contentX < rightScrollArea.contentWidth - rightScrollArea.width
 
+                            StyledText {
+                                anchors.centerIn: parent
+                                text: ">>"
+                                fontSize: Theme.Theme.fontSize
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: rightScrollArea.contentX = Math.min(rightScrollArea.contentWidth - rightScrollArea.width, rightScrollArea.contentX + rightScrollArea.width * 0.75)
                             }
 
                         }
