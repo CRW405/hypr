@@ -1,0 +1,21 @@
+/* #nav-bar, */
+/* #PersonalToolbar { */
+/* 	visibility: collapse !important; */
+/* 	transition: visibility 250ms linear 250ms !important; */
+/* } */
+/**/
+/* #navigator-toolbox:hover #nav-bar, */
+/* #navigator-toolbox:hover #PersonalToolbar, */
+/* :root:has(#urlbar[focused]) #nav-bar, */
+/* :root:has(panel[open], panel[panelopen], menupopup[open], popup[open]) #nav-bar, */
+/* :root:has(panel[open], panel[panelopen], menupopup[open], popup[open]) */
+/* 	#PersonalToolbar, */
+/* :root:has(#PlacesChevronPopup:hover, #bookmarksMenuPopup:hover) */
+/* 	#PersonalToolbar { */
+/* 	visibility: visible !important; */
+/* 	transition-delay: 0s !important; */
+/* } */
+
+* {
+	border-radius: 0 !important;
+}

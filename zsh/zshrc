@@ -43,6 +43,8 @@ alias niri-steam='DISPLAY=:1 steam -system-composer'
 alias n="nnn"
 alias car="echo vroom; cat"
 alias nivm="echo 'you spelled it wrong'; nvim"
+alias q="qalc"
+alias qd="q --set 'angle degrees'"
 
 # Set-up FZF key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
