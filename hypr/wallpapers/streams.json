@@ -2,16 +2,25 @@
   {
     "url": "https://www.youtube.com/live/x10vL6_47Dw?si=17GvhDe_myJqjwsA",
     "title": "🔴 Live Cornell Lab FeederWatch Cam 🔴 at Sapsucker Woods 2026-09-10 23:22",
-    "added": 1789100539
+    "added": 1789100539,
+    "muted": true
   },
   {
     "url": "https://youtu.be/0cn-Y3Mfx3g",
     "title": "🔴 CritterVision Live Wildlife Critter Cam 2026-09-10 23:36",
-    "added": 1789101366
+    "added": 1789101366,
+    "muted": true
   },
   {
     "url": "https://youtu.be/dJgMFLGkwjU",
     "title": "YIPPEE autism creature/TBH creature",
-    "added": 1789101585
+    "added": 1789101585,
+    "muted": false
+  },
+  {
+    "url": "https://youtu.be/8MoaBHl8U3A",
+    "title": "LIVE Polar Bear Cam: Buggy One - Polar Bears International | explore.org 2026-11-13 18:27",
+    "added": 1794616050,
+    "muted": true
   }
 ]

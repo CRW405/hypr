@@ -2,6 +2,8 @@
 configuration {
   modi: "drun";
   show-icons: true;
+  case-sensitive: false;
+  matching: "fuzzy";
 }
 
 @import "colors.rasi"

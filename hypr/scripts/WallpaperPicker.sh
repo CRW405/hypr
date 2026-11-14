@@ -127,6 +127,7 @@ build_entries() {
   ENTRIES=""
   MUTE_LABEL=""
   declare -gA STREAM_URL_BY_LABEL=()
+  declare -gA STREAM_MUTED_BY_LABEL=()
 
   local mon_entry
   mon_entry="$(jq --arg o "$output" '.[$o] // empty' "$MONITORS_FILE")"
@@ -159,9 +160,9 @@ build_entries() {
     fi
   done
 
-  local label url count title
+  local label url count title muted
   declare -A label_count=()
-  while IFS=$'\t' read -r url title; do
+  while IFS=$'\t' read -r url title muted; do
     [ -n "$url" ] || continue
     label="$title"
     count="${label_count[$label]:-0}"
@@ -173,13 +174,14 @@ build_entries() {
     fi
     label_count["$title"]="$count"
     STREAM_URL_BY_LABEL["$label"]="$url"
+    STREAM_MUTED_BY_LABEL["$label"]="$muted"
     local thumbnail
     if thumbnail="$(stream_thumbnail "$url")"; then
       ENTRIES+="${label}\0icon\x1f${thumbnail}\n"
     else
       ENTRIES+="${label}\0icon\x1fvideo-x-generic\n"
     fi
-  done < <(jq -r '.[] | [.url, .title] | @tsv' "$STREAMS_FILE")
+  done < <(jq -r '.[] | [.url, .title, (if (.muted | type) == "boolean" then .muted else true end)] | @tsv' "$STREAMS_FILE")
 }
 
 is_video_file() {
@@ -199,7 +201,7 @@ is_image_file() {
 save_stream() {
   local url="$1" title="$2"
   jq --arg u "$url" --arg t "$title" \
-    '. + [{url: $u, title: $t, added: now | floor}]' \
+    '. + [{url: $u, title: $t, added: now | floor, muted: true}]' \
     "$STREAMS_FILE" >"$STREAMS_FILE.tmp" && mv "$STREAMS_FILE.tmp" "$STREAMS_FILE"
 }
 
@@ -247,7 +249,7 @@ while true; do
       "$VIDEO_CTL" play "$output" video "$WALLPAPER_DIR/$choice" true
       exit 0
     elif [ -n "${STREAM_URL_BY_LABEL[$choice]:-}" ]; then
-      "$VIDEO_CTL" play "$output" stream "${STREAM_URL_BY_LABEL[$choice]}" true
+      "$VIDEO_CTL" play "$output" stream "${STREAM_URL_BY_LABEL[$choice]}" "${STREAM_MUTED_BY_LABEL[$choice]}"
       exit 0
     elif [[ "$choice" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*:// ]]; then
       existing="$(jq -r --arg u "$choice" '.[] | select(.url == $u) | .title' "$STREAMS_FILE")"
@@ -259,7 +261,8 @@ while true; do
         fi
         save_stream "$choice" "$title"
       fi
-      "$VIDEO_CTL" play "$output" stream "$choice" true
+      muted="$(jq -r --arg u "$choice" '.[] | select(.url == $u) | (if (.muted | type) == "boolean" then .muted else true end)' "$STREAMS_FILE" | head -n1)"
+      "$VIDEO_CTL" play "$output" stream "$choice" "$muted"
       exit 0
     else
       notify-send "Wallpaper" "Not a recognized wallpaper, video, saved stream, or URL" -u low 2>/dev/null || true

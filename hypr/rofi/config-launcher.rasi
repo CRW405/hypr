@@ -1,6 +1,8 @@
 configuration {
   modi: "drun,run,window";
   show-icons: true;
+  case-sensitive: false;
+  matching: "fuzzy";
   display-drun: "Apps";
   display-run: "Run";
   display-filebrowser: "Files";

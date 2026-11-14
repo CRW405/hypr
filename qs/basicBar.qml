@@ -349,7 +349,7 @@ ShellRoot {
 
                             StyledText {
                                 anchors.centerIn: parent
-                                text: "<<"
+                                text: "<-"
                                 fontSize: Theme.Theme.fontSize
                             }
 
@@ -373,7 +373,7 @@ ShellRoot {
 
                             StyledText {
                                 anchors.centerIn: parent
-                                text: ">>"
+                                text: "->"
                                 fontSize: Theme.Theme.fontSize
                             }
 

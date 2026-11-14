@@ -44,14 +44,7 @@ end
 
 local function execWithFailureNotification(title, command)
 	local notifier = shellQuote(ScriptsDir .. "NotifyError.sh")
-	hl.exec_cmd(
-		"bash "
-			.. notifier
-			.. " run "
-			.. shellQuote(title)
-			.. " -- bash -c "
-			.. shellQuote(command)
-	)
+	hl.exec_cmd("bash " .. notifier .. " run " .. shellQuote(title) .. " -- bash -c " .. shellQuote(command))
 end
 
 -- ============================================================
@@ -101,38 +94,13 @@ end
 
 local function setZoomFactor(multiplier)
 	local factor = hl.get_config("cursor:zoom_factor")
-	if factor < 1 then
-		factor = 1
-	end
-	hl.config({ cursor = { zoom_factor = factor * multiplier } })
+	factor = math.max(1, math.min(10, factor))
+	factor = math.max(1, math.min(10, factor * multiplier))
+	hl.config({ cursor = { zoom_factor = factor } })
 end
 
-local RepeatInitialDelay = 240
-local RepeatInterval = 60
-
 local function bindRepeatable(keys, dispatcher)
-	local timer = nil
-
-	local function fire()
-		hl.dispatch(dispatcher)
-	end
-
-	hl.bind(keys, function()
-		fire()
-		timer = hl.timer(function()
-			fire()
-			if timer ~= nil then
-				timer:set_timeout(RepeatInterval)
-			end
-		end, { timeout = RepeatInitialDelay, type = "repeat" })
-	end)
-
-	hl.bind(keys, function()
-		if timer ~= nil then
-			timer:set_enabled(false)
-			timer = nil
-		end
-	end, { release = true })
+	hl.bind(keys, dispatcher, { repeating = true })
 end
 
 -- ============================================================
@@ -177,10 +145,10 @@ hl.bind("CTRL + ALT + Escape", hl.dsp.exec_cmd("pkill -9 rofi"), { locked = true
 -- ============================================================
 
 hl.bind(Mod .. " + ALT + mouse_up", function()
-	setZoomFactor(2.0)
+	setZoomFactor(1.1)
 end) -- magnifier: zoom in
 hl.bind(Mod .. " + ALT + mouse_down", function()
-	setZoomFactor(0.5)
+	setZoomFactor(1 / 1.1)
 end) -- magnifier: zoom out
 
 -- ============================================================
@@ -371,8 +339,8 @@ hl.bind(Mod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
 
 bindRepeatable(Mod .. " + comma", hl.dsp.focus({ workspace = "e-1" }))
 bindRepeatable(Mod .. " + period", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(Mod .. " + SHIFT + comma", hl.dsp.window.move({ workspace = "-1" }))
-hl.bind(Mod .. " + SHIFT + period", hl.dsp.window.move({ workspace = "+1" }))
+hl.bind(Mod .. " + SHIFT + comma", hl.dsp.window.move({ workspace = "r-1" }))
+hl.bind(Mod .. " + SHIFT + period", hl.dsp.window.move({ workspace = "r+1" }))
 
 -- ============================================================
 -- Media & Hardware Keys

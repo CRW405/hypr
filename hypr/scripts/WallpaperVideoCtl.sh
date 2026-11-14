@@ -12,6 +12,8 @@ set -euo pipefail
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/wallpaper"
 MONITORS_FILE="$STATE_DIR/monitors.json"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STREAMS_FILE="$SCRIPT_DIR/../wallpapers/streams.json"
 
 ensure_state() {
   mkdir -p "$STATE_DIR"
@@ -63,6 +65,15 @@ set_monitor_entry() {
   jq --arg o "$output" --arg mode "$mode" --arg source "$source" --argjson muted "$muted" \
     '.[$o] = {mode: $mode, source: $source, muted: $muted}' \
     "$MONITORS_FILE" >"$MONITORS_FILE.tmp" && mv "$MONITORS_FILE.tmp" "$MONITORS_FILE"
+}
+
+set_stream_muted() {
+  local source="$1" muted="$2"
+  [ -f "$STREAMS_FILE" ] || return 0
+
+  jq --arg u "$source" --argjson muted "$muted" \
+    'map(if .url == $u then .muted = $muted else . end)' \
+    "$STREAMS_FILE" >"$STREAMS_FILE.tmp" && mv "$STREAMS_FILE.tmp" "$STREAMS_FILE"
 }
 
 clear_monitor_entry() {
@@ -120,6 +131,9 @@ cmd_mute_toggle() {
   [ "$muted" = "true" ] && new_muted="false"
 
   cmd_play "$output" "$mode" "$source" "$new_muted"
+  if [ "$mode" = "stream" ]; then
+    set_stream_muted "$source" "$new_muted"
+  fi
 }
 
 cmd_clear() {
