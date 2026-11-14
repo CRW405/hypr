@@ -113,7 +113,7 @@ ShellRoot {
                             spacing: Theme.Theme.gap
 
                             StyledText {
-                                text: "(^_^)-O"
+                                text: "(^W^)-O"
                             }
 
                             Seperator {
