@@ -9,6 +9,8 @@ Item {
     property int iconWidth: Theme.Theme.iconSize + 2
     property int iconHeight: Math.round(iconWidth * 0.6)
 
+    implicitWidth: iconWidth
+    implicitHeight: iconHeight
     width: iconWidth
     height: iconHeight
 

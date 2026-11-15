@@ -28,9 +28,18 @@ RowLayout {
         iconHeight: root.iconHeight
     }
 
-    StyledText {
-        text: root.label + root.percentage + "%"
-        textColor: root.stateColor
-        fontSize: root.fontSize
+    SlotText {
+        widthSamples: [root.label + "100%"]
+        content: percentageText
+        Layout.minimumWidth: implicitWidth
+        clip: true
+
+        StyledText {
+            id: percentageText
+
+            text: root.label + root.percentage + "%"
+            textColor: root.stateColor
+            fontSize: root.fontSize
+        }
     }
 }

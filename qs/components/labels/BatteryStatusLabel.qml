@@ -1,5 +1,7 @@
 import QtQuick
+import QtQuick.Layouts
 import "../common"
+import "../../theme" as Theme
 
 SlotText {
     id: root
@@ -25,6 +27,8 @@ SlotText {
     }
 
     widthSamples: root.showEstimate && root.status === "Charging" && root.timeToFullSec > 0 ? ["Charging " + root.formatTime(root.timeToFullSec), "Discharging", "Full", "Battery"] : ["Charging", "Discharging", "Full", "Battery"]
+    Layout.minimumWidth: implicitWidth + 2 * Theme.Theme.gap
+    Layout.preferredWidth: implicitWidth + 2 * Theme.Theme.gap
     visible: root.hasBattery
     content: labelText
 
