@@ -8,10 +8,18 @@ Custom Hyprland Dotfiles using the new lua config system. Some bits are borrowed
 The repository is the Hyprland config directory (`~/.config/hypr`). To install
 it on a new machine, run
 `curl -fsSL https://raw.githubusercontent.com/CRW405/hyprqs/master/install.sh | bash`.
-It clones the repository into that directory. To update an existing checkout,
-run `~/.config/hypr/install.sh update` from anywhere. The script fast-forwards
-only, temporarily stashes tracked local changes, then syncs the supported
-dotfiles:
+It clones the repository into that directory, then offers to install a curated
+set of packages for the Hyprland desktop, this config's workflow, and common
+desktop, media, communication, and gaming use with pacman. Steam is included
+when it is available in enabled repositories (it requires multilib). Use
+`--skip-packages` to omit package installation. It is only offered for
+`install`, not `update`. On install, the script also sets up Oh My Zsh and its
+configured plugins, then offers to make zsh the default shell. It does not
+enable system services.
+
+To update an existing checkout, run `~/.config/hypr/install.sh update` from
+anywhere. The script fast-forwards only, temporarily stashes tracked local
+changes, then syncs the supported dotfiles:
 
 - `zsh/zshrc` (or `.zshrc`) to `~/.zshrc`
 - `kitty/` to `~/.config/kitty/`
@@ -31,11 +39,3 @@ location. Local source files must be committed to the repository to be fetched
 by other machines; untracked files only sync on the machine where they exist.
 
 ## TODO
-
-- cava wallpaper overlay
-- make bar folders opening snap to the right to better communicate an opening
-- QS dashboard
-- Profile Picture system
-- Monochrome mode
-- Quick customization: bar, color scheme, etc
-- Work through hyprland from scratch setup and choose and configure my own things like notifications, depends, utils, etc

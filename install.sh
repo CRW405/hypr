@@ -10,6 +10,7 @@ target="${HYPRQS_DIR:-"$config_home/hypr"}"
 backup_base="${HYPRQS_BACKUP_DIR:-"${XDG_STATE_HOME:-"$HOME/.local/state"}/hyprqs/backups"}"
 sddm_data_dir="${SDDM_DATA_DIR:-/usr/share/sddm}"
 skip_sddm=0
+skip_packages=0
 
 die() {
     printf 'install.sh: %s\n' "$*" >&2
@@ -17,8 +18,125 @@ die() {
 }
 
 usage() {
-    printf 'Usage: %s [install|update] [--skip-sddm]\n' "${0##*/}" >&2
+    printf 'Usage: %s [install|update] [--skip-sddm] [--skip-packages]\n' "${0##*/}" >&2
     exit 2
+}
+
+install_packages() {
+    local answer
+    local -a packages=(
+        # Hyprland session and this config's workflow
+        hyprland hypridle hyprlock hyprpicker hyprpolkitagent hyprsunset
+        quickshell rofi kitty thunar firefox neovim zsh fzf nvm lsd nnn
+        awww mpvpaper wlogout grim slurp wl-clipboard cliphist imagemagick cava
+        jq libnotify xdg-utils xdg-user-dirs xorg-xwayland
+        xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
+        # Network, Bluetooth, audio, and power controls
+        networkmanager network-manager-applet bluez bluez-utils blueman
+        pipewire pipewire-alsa pipewire-pulse wireplumber pavucontrol playerctl
+        brightnessctl power-profiles-daemon opentabletdriver
+        # Everyday system utilities and applications
+        base-devel git curl wget rsync bash-completion less man-db man-pages
+        unzip 7zip ripgrep tree btop fastfetch pokemon-colorscripts-git
+        gvfs tumbler thunar-archive-plugin xarchiver
+        mpv ffmpeg yt-dlp loupe libreoffice-fresh qalculate-gtk
+        spotify-launcher discord obs-studio qbittorrent gimp prismlauncher
+        # Fonts and appearance tools
+        noto-fonts noto-fonts-emoji otf-font-awesome ttf-jetbrains-mono-nerd
+        nwg-look qt6ct sddm
+    )
+
+    if ! command -v pacman >/dev/null 2>&1; then
+        printf 'Skipping package installation: pacman is not available.\n'
+        return
+    fi
+    if [[ ! -r /dev/tty ]]; then
+        printf 'Skipping package installation: no interactive terminal is available.\n'
+        return
+    fi
+    if pacman -Si steam >/dev/null 2>&1; then
+        packages+=(steam)
+    else
+        printf 'Skipping Steam: it is unavailable in enabled pacman repositories (Steam requires multilib).\n'
+    fi
+    if ((EUID != 0)) && ! command -v sudo >/dev/null 2>&1; then
+        die "sudo is required to install packages."
+    fi
+
+    printf 'The following packages will be installed if not already present:\n'
+    printf '  %s\n' "${packages[@]}"
+    if ! read -r -p 'Install these packages? [Y/n] ' answer </dev/tty; then
+        printf 'Skipping package installation: could not read confirmation.\n'
+        return
+    fi
+    case "$answer" in
+        ""|[Yy]|[Yy][Ee][Ss]) ;;
+        *) printf 'Skipping package installation.\n'; return ;;
+    esac
+
+    if ((EUID == 0)); then
+        pacman -S --needed "${packages[@]}" </dev/tty
+    else
+        # Pacman prompts must use the terminal when this script is piped to bash.
+        # shellcheck disable=SC2024
+        sudo pacman -S --needed "${packages[@]}" </dev/tty
+    fi
+}
+
+setup_oh_my_zsh() {
+    local oh_my_zsh_dir="$HOME/.oh-my-zsh"
+    local custom_plugins plugin_dir plugin_entry zsh_path account current_shell answer plugin
+    local -a plugins=(zsh-autosuggestions zsh-syntax-highlighting)
+
+    if ! command -v zsh >/dev/null 2>&1; then
+        printf 'Skipping Oh My Zsh setup: zsh is not installed.\n'
+        return
+    fi
+
+    if [[ -e "$oh_my_zsh_dir" || -L "$oh_my_zsh_dir" ]]; then
+        [[ -f "$oh_my_zsh_dir/oh-my-zsh.sh" ]] \
+            || die "existing Oh My Zsh path is not a valid installation: $oh_my_zsh_dir"
+    else
+        git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$oh_my_zsh_dir"
+    fi
+
+    custom_plugins="$oh_my_zsh_dir/custom/plugins"
+    mkdir -p "$custom_plugins"
+    for plugin in "${plugins[@]}"; do
+        plugin_dir="$custom_plugins/$plugin"
+        plugin_entry="$plugin.zsh"
+        if [[ -e "$plugin_dir" || -L "$plugin_dir" ]]; then
+            [[ -f "$plugin_dir/$plugin_entry" ]] || die "plugin installation is incomplete: $plugin_dir"
+            continue
+        fi
+        git clone --depth=1 "https://github.com/zsh-users/$plugin.git" "$plugin_dir"
+    done
+
+    zsh_path="$(command -v zsh)"
+    if [[ ! -r /etc/shells ]] || ! grep -Fxq "$zsh_path" /etc/shells; then
+        printf 'Oh My Zsh is ready, but %s is not listed in /etc/shells; not changing the default shell.\n' "$zsh_path"
+        return
+    fi
+    account="$(id -un)"
+    current_shell="$(getent passwd "$account" | cut -d: -f7)" \
+        || die "could not determine the current login shell."
+    [[ -n "$current_shell" ]] || die "could not determine the current login shell."
+    if [[ "$current_shell" == "$zsh_path" ]]; then
+        printf 'The default shell is already %s.\n' "$zsh_path"
+        return
+    fi
+    if ! command -v chsh >/dev/null 2>&1; then
+        printf 'Oh My Zsh is ready, but chsh is unavailable; not changing the default shell.\n'
+        return
+    fi
+    if ! read -r -p "Set the default shell to $zsh_path? [Y/n] " answer </dev/tty; then
+        printf 'Could not read confirmation; not changing the default shell.\n'
+        return
+    fi
+    case "$answer" in
+        ""|[Yy]|[Yy][Ee][Ss]) chsh -s "$zsh_path" "$account" </dev/tty ;;
+        *) printf 'Keeping the current default shell.\n' ;;
+    esac
 }
 
 normalize_url() {
@@ -175,6 +293,7 @@ for argument in "$@"; do
             action_set=1
             ;;
         --skip-sddm) skip_sddm=1 ;;
+        --skip-packages) skip_packages=1 ;;
         *) usage ;;
     esac
 done
@@ -209,6 +328,10 @@ else
     printf 'Install complete.\n'
 fi
 
+if [[ "$action" == install ]] && (( ! skip_packages )); then
+    install_packages
+fi
+
 repo_dir="$target"
 declare -a sddm_sources=()
 declare -i sddm_use_sudo=0
@@ -222,6 +345,9 @@ elif [[ -f "$repo_dir/.zshrc" ]]; then
 fi
 if [[ -n "$zsh_source" ]]; then
     install_user_file "$zsh_source" "$HOME/.zshrc" "home/.zshrc"
+    if [[ "$action" == install ]]; then
+        setup_oh_my_zsh
+    fi
 else
     printf 'Skipping zsh: no zsh/zshrc or .zshrc source found.\n' >&2
 fi
